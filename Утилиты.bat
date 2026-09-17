@@ -10,7 +10,8 @@ if %errorlevel% NEQ 0 (
     echo  ОШИБКА: требуются права администратора.
     echo  Щёлкните правой кнопкой -^> "Запуск от имени администратора".
     echo.
-    pause
+    echo Для продолжения нажмите любую клавишу...
+    pause >nul
     exit /b 1
 )
 
@@ -50,7 +51,8 @@ exit /b
 
 :PauseBack
 echo.
-pause
+echo Для продолжения нажмите любую клавишу...
+pause >nul
 exit /b
 
 :Ask
@@ -815,8 +817,8 @@ if "%choice%"=="2" (
 )
 if "%choice%"=="3" (
     echo.
-    vssadmin delete shadows /for=%SystemDrive% /oldest /quiet 2>nul
-    call :Ok "Готово (можно повторить, пока не останется одна)"
+        vssadmin delete shadows /for=%SystemDrive% /oldest /quiet 2>nul
+        call :Ok "Готово ^(можно повторить, пока не останется одна^)"
 )
 call :PauseBack
 goto CleanMenu
@@ -2387,13 +2389,13 @@ if "%choice%"=="1" (
     echo.
     echo  %Yellow%Отключаю NetBIOS...%Reset%
     powershell -NoProfile -Command "Get-CimInstance Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled } | ForEach-Object { $r=$_.SetTcpipNetbios(2); Write-Host ('  ' + $_.Description + '  ->  код ' + $r.ReturnValue) }"
-    echo. & call :Ok "NetBIOS отключён  (2 = Disable)"
+    echo. & call :Ok "NetBIOS отключён  ^(2 = Disable^)"
 )
 if "%choice%"=="2" (
     echo.
-    echo  %Yellow%Включаю NetBIOS (через DHCP)...%Reset%
+    echo  %Yellow%Включаю NetBIOS ^(через DHCP^)...%Reset%
     powershell -NoProfile -Command "Get-CimInstance Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled } | ForEach-Object { $r=$_.SetTcpipNetbios(0); Write-Host ('  ' + $_.Description + '  ->  код ' + $r.ReturnValue) }"
-    echo. & call :Ok "NetBIOS = Default (DHCP)"
+    echo. & call :Ok "NetBIOS = Default ^(DHCP^)"
 )
 if "%choice%"=="3" (
     nbtstat -R >nul 2>&1
@@ -2873,7 +2875,7 @@ if "%choice%"=="1" (
 )
 if "%choice%"=="2" (
     reg delete "HKCU\Control Panel\Desktop" /v JPEGImportQuality /f >nul 2>&1
-    echo. & call :Ok "Сжатие обоев включено (по умолчанию)"
+    echo. & call :Ok "Сжатие обоев включено ^(по умолчанию^)"
 )
 call :PauseBack
 goto WallMenu
@@ -3291,19 +3293,24 @@ echo  %Bold%[0]%Reset%  Назад
 echo.
 call :Ask
 if "%choice%"=="0" goto MainMenu
-if "%choice%"=="1" (
-    echo.
-    echo  %Yellow%Ослабление контроля учётных записей (UAC)...%Reset%
-    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v PromptOnSecureDesktop /t REG_DWORD /d 0 /f >nul 2>&1
-    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 0 /f >nul 2>&1
-    call :Ok "UAC ослаблен"
-)
-if "%choice%"=="2" (
-    echo.
-    echo  %Yellow%Включение контроля учётных записей (UAC)...%Reset%
-    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v PromptOnSecureDesktop /t REG_DWORD /d 1 /f >nul 2>&1
-    reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 5 /f >nul 2>&1
-    call :Ok "UAC включён"
-)
+if "%choice%"=="1" goto SecWeaken
+if "%choice%"=="2" goto SecEnable
+goto SecMenu
+
+:SecWeaken
+echo.
+echo  %Yellow%Ослабление контроля учётных записей ^(UAC^)...%Reset%
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v PromptOnSecureDesktop /t REG_DWORD /d 0 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 0 /f >nul 2>&1
+call :Ok "UAC ослаблен"
+call :PauseBack
+goto SecMenu
+
+:SecEnable
+echo.
+echo  %Yellow%Включение контроля учётных записей ^(UAC^)...%Reset%
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v PromptOnSecureDesktop /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 5 /f >nul 2>&1
+call :Ok "UAC включён"
 call :PauseBack
 goto SecMenu
